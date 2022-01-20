@@ -19,6 +19,19 @@ class BankAccountRepository extends ServiceEntityRepository
         parent::__construct($registry, BankAccount::class);
     }
 
+    public function transferAmount($from, $to, $amount): void
+    {
+        $fromAccount = $this->find($from);
+        $toAccount = $this->find($to);
+
+        $fromAccount->setAmount($fromAccount->getAmount() - $amount);
+        $toAccount->setAmount($toAccount->getAmount() + $amount);
+
+        $this->_em->persist($fromAccount);
+        $this->_em->persist($toAccount);
+        $this->_em->flush();
+    }
+
     // /**
     //  * @return BankAccount[] Returns an array of BankAccount objects
     //  */
