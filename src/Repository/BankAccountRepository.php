@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\BankAccount;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\DBAL\LockMode;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -27,37 +28,23 @@ class BankAccountRepository extends ServiceEntityRepository
         $fromAccount->setAmount($fromAccount->getAmount() - $amount);
         $toAccount->setAmount($toAccount->getAmount() + $amount);
 
-        $this->_em->persist($fromAccount);
-        $this->_em->persist($toAccount);
-        $this->_em->flush();
+        $this->getEntityManager()->persist($fromAccount);
+        $this->getEntityManager()->persist($toAccount);
+        $this->getEntityManager()->flush();
     }
 
-    // /**
-    //  * @return BankAccount[] Returns an array of BankAccount objects
-    //  */
-    /*
-    public function findByExampleField($value)
+    public function transferAmountConcurrently($from, $to, $amount): void
     {
-        return $this->createQueryBuilder('b')
-            ->andWhere('b.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('b.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
-    }
-    */
+        $this->getEntityManager()->beginTransaction();
+        $fromAccount = $this->find($from, LockMode::PESSIMISTIC_WRITE);
+        $toAccount = $this->find($to, LockMode::PESSIMISTIC_WRITE);
 
-    /*
-    public function findOneBySomeField($value): ?BankAccount
-    {
-        return $this->createQueryBuilder('b')
-            ->andWhere('b.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
+        $fromAccount->setAmount($fromAccount->getAmount() - $amount);
+        $toAccount->setAmount($toAccount->getAmount() + $amount);
+
+        $this->getEntityManager()->persist($fromAccount);
+        $this->getEntityManager()->persist($toAccount);
+        $this->getEntityManager()->flush();
+        $this->getEntityManager()->commit();
     }
-    */
 }
