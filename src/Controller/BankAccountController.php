@@ -23,7 +23,7 @@ class BankAccountController extends AbstractController
         return new Response(sprintf('from %s to %s amount %s', $from, $to, $amount));
     }
 
-    #[Route('/move-concurrently', name: 'bank_account')]
+    #[Route('/move-concurrently', name: 'bank_account_concurrent')]
     public function transferConcurrently(Request $request, BankAccountRepository $repository): Response
     {
         $from = $request->query->get('from');
